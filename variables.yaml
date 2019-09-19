@@ -1,0 +1,10 @@
+ec2_region: "us-west-1"
+ec2_instance_type: "t2.micro"
+ec2_image: "ami-9887c6e7"
+ec2_keypair: "test_keypair"
+ec2_volume_size: 8
+ec2_count: 1
+ec2_security_group_id: "sg-06bded1a985de0760"
+ec2_subnet_id: "subnet-0ddc1c83dde618f13"
+ec2_tag_Type: "name"
+ec2_tag_Role: "test"
