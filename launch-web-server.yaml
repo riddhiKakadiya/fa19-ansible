@@ -58,3 +58,28 @@
       tags:
         app: web
     register: ec2instance
+
+  - name: install apache
+    hosts: localhost
+    sudo: yes
+    tasks:
+    - name: install apache2
+      apt: name=apache2 update_cache=yes state=latest
+
+  - name: ensure apache is at the latest version
+    yum:
+    name: httpd
+    state: latest 
+
+  - hosts: apache
+    tasks:
+      - name: update yum 
+        command: yum update -y
+
+  - name: Install Python
+    raw: apt -y update && apt install -y python-minimal
+
+
+
+
+

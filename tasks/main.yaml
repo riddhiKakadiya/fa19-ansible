@@ -1,0 +1,29 @@
+#contains the main list of steps to be executed by the role
+---
+  - name: install apache
+    hosts: localhost
+    sudo: yes
+    tasks:
+    - name: install apache2
+      apt: name=apache2 update_cache=yes state=latest
+
+    # - name: enabled mod_rewrite
+    #   apache2_module: name=rewrite state=present
+    #   notify:
+    #     - restart apache2
+    # handlers:
+    #   - name: restart apache2
+    #     service: name=apache2 state=restarted
+
+  - name: ensure apache is at the latest version
+    yum:
+    name: httpd
+    state: latest 
+
+  - hosts: apache
+    tasks:
+      - name: update yum 
+        command: yum update -y
+
+  - name: Install Python
+    raw: apt -y update && apt install -y python-minimal
