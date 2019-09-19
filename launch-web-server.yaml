@@ -1,0 +1,33 @@
+---
+- name: ec2 launcher
+  hosts: localhost
+  connection: local
+  tasks:
+  - name: check running instances
+    # Gather facts about any instance with a tag key app and value web
+    ec2_instance_facts:
+      filters:
+        instance-state-name: ["running"]
+        "tag:app": web
+  - name: launching ec2 instance
+    ec2_instance:
+      name: "fa-19 ansible instance"
+      key_name: "fall2019"
+      instance_type: t2.micro
+      security_group: default
+      network:
+        assign_public_ip: true
+      image_id: ami-9887c6e7
+      tags:
+        app: web
+    # - name: launching ec2
+  #   ec2:
+  #     key_name: fall2019
+  #     instance_type: t2.micro
+  #     group: default
+  #     image: ami-9887c6e7
+  #     wait: yes
+  #     region: us-east-1
+  #     assign_public_ip: yes
+  #     instance_tags:
+  #       app: web
