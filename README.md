@@ -16,3 +16,9 @@
 # Ansible Playbooks
 1. launch-web-server.yaml
 2. terminate-web-server.yaml
+
+# Command for server termination
+```bash
+ansible-playbook terminate-web-server.yaml --extra-vars "region=us-east-1 key=type value=test_instance"
+```
+
