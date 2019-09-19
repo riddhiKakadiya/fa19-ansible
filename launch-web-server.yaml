@@ -4,6 +4,7 @@
   vars:
     region: "{{ region }}" # Passed as cli argument
     ssh_key: "{{ ssh_key }}" # Passed as cli argument
+    ssh_pem_file_location: "{{ssh_pem_file_location}}"
   connection: local
   tasks:
   - name: Check for default vpc
@@ -59,27 +60,20 @@
         app: web
     register: ec2instance
 
-  - name: install apache
-    hosts: localhost
-    sudo: yes
-    tasks:
-    - name: install apache2
-      apt: name=apache2 update_cache=yes state=latest
 
-  - name: ensure apache is at the latest version
-    yum:
-    name: httpd
-    state: latest 
-
-  - hosts: apache
-    tasks:
-      - name: update yum 
-        command: yum update -y
-
-  - name: Install Python
-    raw: apt -y update && apt install -y python-minimal
-
-
-
-
+  - debug: msg="{{ ec2instance.instances[0] }}"
+  - name: Add new instance to host group
+    add_host:
+      hostname: "{{ item.public_ip_address}}"
+      groupname: launched
+    loop: "{{ ec2instance.instances }}"
+- name: Configure instance
+  hosts: launched
+  remote_user: centos
+  vars:
+    ansible_ssh_private_key_file: "{{ssh_pem_file_location}}"
+  tasks:
+    - name : echo
+      command: echo hello
+    
 

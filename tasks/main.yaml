@@ -25,5 +25,5 @@
       - name: update yum 
         command: yum update -y
 
-  - name: Install Python
-    raw: apt -y update && apt install -y python-minimal
+  # - name: Install Python
+  #   raw: apt -y update && apt install -y python-minimal
