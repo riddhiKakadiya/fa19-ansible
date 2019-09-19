@@ -19,10 +19,10 @@
 
 # Command lo launch server
 ```bash
-ansible-playbook launch-web-server.yaml -e "region=us-east-1 ssh_key=<ec2-keypair-name>"  
+ansible-playbook launch-web-server.yaml -e "region=us-east-1 ssh_key=<ec2-keypair-name> ssh_pem_file_location=<ssh_pem_file_location>"  
 ```
 # Command for server termination
 ```bash
-ansible-playbook terminate-web-server.yaml --extra-vars "region=us-east-1 key=type value=test_instance"
+ansible-playbook terminate-web-server.yaml -e "region=us-east-1 key=type value=test_instance"
 ```
 
