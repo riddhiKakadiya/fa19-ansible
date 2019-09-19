@@ -1,47 +1,60 @@
 ---
-### provision AWS EC2 instance
-
-- name: Create a sandbox instance
+- name: ec2 launcher
   hosts: localhost
-  gather_facts: False
   vars:
-    keypair: test-keypair
-    instance_type: t2.micro
-    security_group: sg-06bded1a985de0760
-    image: ami-9887c6e7
-    region: us-east-1
+    region: "{{ region }}" # Passed as cli argument
+    ssh_key: "{{ ssh_key }}" # Passed as cli argument
+  connection: local
   tasks:
-    - name: Launch instance
-      ec2:
-         key_name: "{{ keypair }}"
-         group_id: "{{ security_group }}"
-         instance_type: "{{ instance_type }}"
-         image: "{{ image }}"
-         count: 2
-         wait: true
-         region: "{{ region }}"
-         vpc_subnet_id: subnet-0043dd849a39a5907
-         assign_public_ip: yes
-         instance_tags:
-          type: test_instance
-         volumes:
-          - device_name: /dev/sdb
-            volume_size: 8
-            volume_type: gp2
-            delete_on_termination: True
-      register: ec2
+  - name: Check for default vpc
+    ec2_vpc_net_facts:
+      region: '{{region}}'
+    register: ec2_vpc_net_facts_results
 
-    # - name: Add new instance to host group
-    #   add_host: hostname={{ item.public_ip }} groupname=launched
-    #   with_items: ec2.instances
+  - name: check running instances
 
-    # - name: Wait for SSH to come up
-    #   wait_for: host={{ item.public_dns_name }} port=22 delay=60 timeout=320 state=started
-    #   with_items: ec2.instances
+  # Gather facts about any instance with a tag key 'app' and value 'web'
+    ec2_instance_facts:
+      filters:
+        instance-state-name: ["running"]
+        "tag:app": web
+    register: ec2_metadata
+    
+  #Output the Instance Id of the first EC2 instance returned in the metadata
+  #- debug: msg="{{ ec2_metadata.instances[0].instance_id }}"
+  
+  #Create Security Group for EC2_instance
+  - name: "Create a new security group"
+    ec2_group:
+      name: "ansible-sec-group"
+      description: "New SG for Ansible-created instances"
+      region: "{{ region }}"
+      vpc_id: "{{default_vpc.id}}"
+      rules:
+        - proto: "tcp"
+          from_port: 22
+          to_port: 22
+          cidr_ip: "0.0.0.0/0"
+      rules_egress:
+        - proto: "all"
+          cidr_ip: "0.0.0.0/0"
+      tags:
+        app: web
+    vars:
+      default_vpc: '{{(ec2_vpc_net_facts_results|json_query("vpcs[?is_default]"))[0]}}'
+    register: secgrp
 
-    # - name: install Apache
-    #   hosts: launched
-    #   remote_user: ec2-user
-    #   roles:
-    #     - apache
-        
+  - name: Provision an ec2 instance
+    ec2_instance:
+      name: "fa-19 ansible instance"
+      key_name: "{{ ssh_key }}"
+      instance_type: t2.micro
+      security_group: "{{ secgrp.group_id }}"
+      region: "{{ region }}"
+      network:
+        assign_public_ip: true
+      image_id: ami-9887c6e7
+      wait: true
+      tags:
+        app: web
+    register: ec2instance
