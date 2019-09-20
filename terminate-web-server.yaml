@@ -20,9 +20,6 @@
     #Output the metadata of the EC2 instances
     - debug: msg="{{ ec2_metadata.instances }}"
 
-    #Output the Instance Id of the first EC2 instance returned in the metadata
-    - debug: msg="{{ ec2_metadata.instances[0].instance_id }}"
-
     #Terminating the EC2 instances and waiting for them to reach the desired state
     - name: Terminate instances that were previously launched
       ec2:

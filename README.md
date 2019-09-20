@@ -23,6 +23,6 @@ ansible-playbook launch-web-server.yaml -e "region=us-east-1 ssh_key=<ec2-keypai
 ```
 # Command for server termination
 ```bash
-ansible-playbook terminate-web-server.yaml -e "region=us-east-1 key=type value=test_instance"
+ansible-playbook terminate-web-server.yaml -e "region=us-east-1 key=<key> value=<value>"
 ```
 

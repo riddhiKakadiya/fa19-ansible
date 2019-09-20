@@ -67,7 +67,12 @@
       hostname: "{{ item.public_ip_address}}"
       groupname: launched
     loop: "{{ ec2instance.instances }}"
-
+  - name: Wait for SSH to come up
+    wait_for:
+      host: "{{ item.public_ip_address }}"
+      port: 22 
+      state: started 
+    with_items: "{{ ec2instance.instances }}"
 - name: Configure instance
   hosts: launched
   become: yes
@@ -75,21 +80,19 @@
   vars:
     ansible_ssh_private_key_file: "{{ssh_pem_file_location}}"
   tasks:
-    - name: remove the Apache package
-      yum:
-        name: httpd
-        state: absent
+    - name: update yum package
+      command: yum update -y
     - name: install the latest version of Apache from the testing repo
       yum:
         name: httpd
-        state: present
+        state: latest
     - name: install the latest version of python3
       yum:
         name: python3
         state: present
-    - name: delete the latest version of python2
-      yum:
-        name: python
-        state: absent
-    
+
+    # - name: delete the latest version of python2
+    #   yum:
+    #     name: python
+    #     state: absent
 
