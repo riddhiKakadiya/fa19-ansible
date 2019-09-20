@@ -85,6 +85,8 @@
   vars:
     ansible_ssh_private_key_file: "{{ssh_pem_file_location}}"
   tasks:
+    - name: create symbolic link to call python2 ahead of python3
+      raw: sudo ln -sf python2 /usr/bin/python
     - name: update yum package
       command: yum update -y
     - name: install the latest version of Apache from the testing repo
