@@ -91,8 +91,7 @@
         name: python3
         state: present
 
-    # - name: delete the latest version of python2
-    #   yum:
-    #     name: python
-    #     state: absent
+    - name: create symbolic link to call python3 ahead of python2
+      raw: sudo ln -sf python3 /usr/bin/python
+
 
