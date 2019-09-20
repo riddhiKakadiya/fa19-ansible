@@ -20,7 +20,7 @@
     name: httpd
     state: latest 
 
-  - hosts: apache
+  # - hosts: apache
     tasks:
       - name: update yum 
         command: yum update -y
