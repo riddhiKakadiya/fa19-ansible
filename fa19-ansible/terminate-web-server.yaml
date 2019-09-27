@@ -18,7 +18,7 @@
       register: ec2_metadata
 
     #Output the metadata of the EC2 instances
-    - name: "Get security group attached to ec2 instance"
+    - name: "Get metadata for ec2 instances"
       debug: msg="{{ec2_metadata}}"
 
 
