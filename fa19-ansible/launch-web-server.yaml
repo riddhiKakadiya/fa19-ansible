@@ -36,6 +36,10 @@
           from_port: 22
           to_port: 22
           cidr_ip: "0.0.0.0/0"
+        - proto: "tcp"
+          from_port: 80
+          to_port: 80
+          cidr_ip: "0.0.0.0/0"
       rules_egress:
         - proto: "all"
           cidr_ip: "0.0.0.0/0"
@@ -64,18 +68,22 @@
       tags:
         app: web
     register: ec2instance
+
   - debug: msg="{{ ec2instance.instances[0] }}"
+
   - name: Add new instance to host group
     add_host:
       hostname: "{{ item.public_ip_address}}"
       groupname: launched
     loop: "{{ ec2instance.instances }}"
+
   - name: Wait for SSH to come up
     wait_for:
       host: "{{ item.public_ip_address }}"
       port: 22 
       state: started 
     with_items: "{{ ec2instance.instances }}"
+
 - name: Configure instance
   hosts: launched
   become: yes
@@ -85,19 +93,37 @@
   tasks:
     - name: create symbolic link to call python2 ahead of python3
       raw: sudo ln -sf python2 /usr/bin/python
+
     - name: update yum package
       command: yum update -y
+
     - name: install the latest version of Apache from the testing repo
       yum:
         name: httpd
         state: latest
+
+    - name: ensure apache is running
+      service:
+        name: httpd
+        state: started
+
+    - name: write the apache config file
+      template:
+        src: srv/httpd.conf
+        dest: /etc/httpd/conf/httpd.conf
+      notify:
+      - restart apache
+    
     - name: install the latest version of python3
       yum:
         name: python3
         state: present
+
     - name: create symbolic link to call python3 ahead of python2
       raw: sudo ln -sf python3 /usr/bin/python
-    # - name: delete the latest version of python2
-    #   yum:
-    #     name: python
-    #     state: absent
+
+  handlers:
+    - name: restart apache
+      service:
+        name: httpd
+        state: restarted
