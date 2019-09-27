@@ -14,11 +14,13 @@
     - name: Gather EC2 facts
       ec2_instance_facts :
         filters:
-          "{{ { 'tag:' ~ key: value } }}"
+          "{{ { 'tag:' ~ key: value, 'instance-state-name': ['running']}}}"
       register: ec2_metadata
 
     #Output the metadata of the EC2 instances
-    - debug: msg="{{ ec2_metadata.instances }}"
+    - name: "Get metadata for ec2 instances"
+      debug: msg="{{ec2_metadata}}"
+
 
     #Terminating the EC2 instances and waiting for them to reach the desired state
     - name: Terminate instances that were previously launched
@@ -28,3 +30,10 @@
         instance_ids: '{{ item.instance_id }}'
         wait: True
       loop : "{{ ec2_metadata.instances }}"
+
+    - name : Remove security grp
+      ec2_group:
+        region: "{{ region }}"
+        group_id: '{{ item.security_groups[0].group_id }}'
+        state: absent
+      loop: "{{ ec2_metadata.instances}}"
